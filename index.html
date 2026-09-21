@@ -152,8 +152,16 @@
     <!-- Player Name Lookup -->
     <div class="mt-6">
       <button id="name-lookup-btn"
-        class="w-full py-3 px-6 bg-white border-2 border-slate-200 hover:border-slate-300 active:border-slate-400 transition-colors text-slate-700 font-semibold rounded-2xl text-base shadow-sm">
+        class="w-full py-2 px-6 bg-white border-2 border-slate-200 hover:border-slate-300 active:border-slate-400 transition-colors text-slate-700 font-semibold rounded-2xl text-base shadow-sm">
         Player Name Lookup
+      </button>
+    </div>
+
+    <!-- Large Input Mode toggle (jersey-number keypad only) -->
+    <div class="mt-3">
+      <button id="large-input-btn"
+        class="w-full py-2 px-6 bg-white border-2 border-slate-200 hover:border-slate-300 active:border-slate-400 transition-colors text-slate-700 font-semibold rounded-2xl text-base shadow-sm">
+        Large Input Mode
       </button>
     </div>
 
@@ -429,7 +437,12 @@
 
     const nameLookupBtn = document.getElementById('name-lookup-btn');
     const nameResults = document.getElementById('name-results');
+    const largeInputBtn = document.getElementById('large-input-btn');
     let currentMode = 'number';
+    // Large Input Mode = bigger jersey-number keypad buttons (3 rows). Persisted
+    // per-device; only affects the jersey-number lookup, never name lookup.
+    let largeInputMode = false;
+    try { largeInputMode = localStorage.getItem('LargeInputMode') === '1'; } catch (e) {}
 
     let debounceTimer = null;
     let lastUnknownNumber = null;
@@ -505,26 +518,45 @@
     function buildKeypad() {
       keypad.innerHTML = '';
 
-      const keyClass = 'h-11 text-2xl font-bold bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition-colors text-slate-800 rounded-xl';
-      const rowClass = 'grid grid-cols-5 gap-2';
+      const baseKeyClass = 'font-bold bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition-colors text-slate-800 rounded-xl';
+      // Regular mode: 2 rows × 5 keys. Large mode: 3 rows with much bigger buttons.
+      const regularKeyClass = 'h-11 text-2xl ' + baseKeyClass;
+      const largeKeyClass = 'h-20 text-5xl ' + baseKeyClass;
 
       const grid = document.createElement('div');
       grid.className = 'grid gap-2';
 
-      const row1 = document.createElement('div');
-      row1.className = rowClass;
-      for (let d = 1; d <= 5; d++) {
-        row1.appendChild(makeKey(d, keyClass));
-      }
-      grid.appendChild(row1);
+      if (largeInputMode) {
+        // Rows of 4 (1-4, 5-8) then a centered row of 2 (9, 0), each spanning 2 cols.
+        const rowClass = 'grid grid-cols-4 gap-2';
+        const row1 = document.createElement('div');
+        row1.className = rowClass;
+        for (let d = 1; d <= 4; d++) row1.appendChild(makeKey(d, largeKeyClass));
+        grid.appendChild(row1);
 
-      const row2 = document.createElement('div');
-      row2.className = rowClass;
-      for (let d = 6; d <= 9; d++) {
-        row2.appendChild(makeKey(d, keyClass));
+        const row2 = document.createElement('div');
+        row2.className = rowClass;
+        for (let d = 5; d <= 8; d++) row2.appendChild(makeKey(d, largeKeyClass));
+        grid.appendChild(row2);
+
+        const row3 = document.createElement('div');
+        row3.className = rowClass;
+        row3.appendChild(makeKey(9, largeKeyClass + ' col-span-2'));
+        row3.appendChild(makeKey(0, largeKeyClass + ' col-span-2'));
+        grid.appendChild(row3);
+      } else {
+        const rowClass = 'grid grid-cols-5 gap-2';
+        const row1 = document.createElement('div');
+        row1.className = rowClass;
+        for (let d = 1; d <= 5; d++) row1.appendChild(makeKey(d, regularKeyClass));
+        grid.appendChild(row1);
+
+        const row2 = document.createElement('div');
+        row2.className = rowClass;
+        for (let d = 6; d <= 9; d++) row2.appendChild(makeKey(d, regularKeyClass));
+        row2.appendChild(makeKey(0, regularKeyClass));
+        grid.appendChild(row2);
       }
-      row2.appendChild(makeKey(0, keyClass));
-      grid.appendChild(row2);
 
       keypad.appendChild(grid);
     }
@@ -564,6 +596,22 @@
     }
 
     buildKeypad();
+
+    // Toggle between regular (2×5) and large (3-row, bigger) jersey keypads.
+    function setLargeInputMode(on) {
+      largeInputMode = on;
+      try { localStorage.setItem('LargeInputMode', on ? '1' : '0'); } catch (e) {}
+      largeInputBtn.textContent = on ? 'Regular Input Mode' : 'Large Input Mode';
+      if (currentMode === 'number') buildKeypad();
+    }
+
+    largeInputBtn.addEventListener('click', () => {
+      setLargeInputMode(!largeInputMode);
+    });
+
+    // Reflect the persisted mode in the button label at boot (and render the
+    // correct keypad, since buildKeypad() ran above with the default value).
+    setLargeInputMode(largeInputMode);
 
     document.getElementById('clear-btn').addEventListener('click', () => {
       jerseyDisplay.textContent = '';
