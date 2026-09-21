@@ -4,18 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>2026 Varsity Roster • Lookup</title>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="favicon-192x192.png">
-  <link rel="shortcut icon" href="favicon.ico">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192x192.png">
+  <link rel="shortcut icon" href="images/favicon.ico">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
   <meta name="theme-color" content="#1B3F66">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Roster">
-  <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;2026 Varsity Roster&quot;,&quot;short_name&quot;:&quot;Roster&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;apple-touch-icon.png&quot;,&quot;sizes&quot;:&quot;180x180&quot;,&quot;type&quot;:&quot;image/png&quot;}]}">
+  <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;2026 Varsity Roster&quot;,&quot;short_name&quot;:&quot;Roster&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;images/apple-touch-icon.png&quot;,&quot;sizes&quot;:&quot;180x180&quot;,&quot;type&quot;:&quot;image/png&quot;}]}">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
@@ -347,15 +347,15 @@
     // the offline/file:// fallback so the app always boots; the manifest is the
     // source of truth once it loads.
     const FALLBACK_ROSTERS = [
-      { id: 'football-boys', name: 'Football Varsity', url: 'https://raw.githubusercontent.com/marcryan/DBWF/main/roster-app-football-boys.json' }
+      { id: 'football-boys', name: 'Football Varsity', url: 'https://raw.githubusercontent.com/marcryan/lanyard/main/rosters/roster-app-football-boys.json' }
     ];
     let ROSTERS = [...FALLBACK_ROSTERS];
     // Manifest candidates, tried in order: same-origin rosters.json first
     // (hosted Pages), then the git-hosted mirror (so the list still loads when
     // the app is opened over file:// with network).
     const ROSTERS_MANIFEST_SOURCES = [
-      'rosters.json?t=' + Date.now(),
-      'https://raw.githubusercontent.com/marcryan/DBWF/main/rosters.json?t=' + Date.now()
+      'rosters/rosters.json?t=' + Date.now(),
+      'https://raw.githubusercontent.com/marcryan/lanyard/main/rosters/rosters.json?t=' + Date.now()
     ];
     async function initRostersFromManifest() {
       for (const src of ROSTERS_MANIFEST_SOURCES) {

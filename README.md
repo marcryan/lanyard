@@ -1,6 +1,8 @@
-# 2026 Varsity Roster Lookup
+# Lanyard
 
-A simple, mobile-first web app for quickly looking up players by jersey number from the 2026 Varsity Roster.
+Mobile-first web app for quickly looking up players by jersey number from the 2026 Varsity Roster.
+
+Repo: [marcryan/lanyard](https://github.com/marcryan/lanyard) · Live site: [marcryan.github.io/lanyard](https://marcryan.github.io/lanyard)
 
 ## Features
 - **Big, readable fonts** optimized for mobile devices and quick glances
@@ -28,8 +30,10 @@ A simple, mobile-first web app for quickly looking up players by jersey number f
 - Includes Killian Ryan (#55, Sophomore)
 
 ## Files
-- `index.html` — the complete web app (self-contained, ~13KB)
-- `roster.json` — raw data (if you want to update the roster separately)
+- `index.html` — the web app (self-contained)
+- `rosters/` — roster data: `roster-app-*.json` (app-format rosters the lookup fetches), `roster_*.json` (raw CIAC exports), `rosters.json` (roster-list manifest)
+- `images/` — favicons and source/master assets
+- `misc/` — dev / build artifacts (gitignored; not in the published site)
 
 ## Customization
 To update the roster:

@@ -1,0 +1,3 @@
+# Dev / build artifacts that aren't part of the published site
+/misc/
+.DS_Store
