@@ -7,13 +7,13 @@ Repo: [marcryan/lanyard](https://github.com/marcryan/lanyard) · Live site: [mar
 ## Features
 - **Big, readable fonts** optimized for mobile devices and quick glances
 - **Live search** — type the number and results appear instantly
+- **Search by Name** — type a player's name to see their number
+- **Multiple Rosters** — supports multiple rosters enabling one app for multiple sports/teams
 - **Color-coded class years**: 
   - Senior → emerald green
   - Junior → sky blue  
   - Sophomore → amber
-- Huge jersey number display
-- Clear button
-- Keyboard friendly (type digits anywhere to focus input)
+  - Freshman → pink
 - Fully self-contained single `index.html` file (no build step)
 - Works great on phones, tablets, or desktop
 
@@ -25,26 +25,14 @@ Repo: [marcryan/lanyard](https://github.com/marcryan/lanyard) · Live site: [mar
    - Or upload the single HTML file to any static host (Netlify, Vercel, GitHub Pages, etc.)
 
 ## Data
-- 76 players
-- Source: 2026 Varsity Roster Draft (from PDF export of Google Sheets)
-- Includes Killian Ryan (#55, Sophomore)
+- Roster Manifest registers the avilable rosters 
+- Individual rosters stored separately in json
+- Live editing: add players dynamically and request roster changes
+- Dynamic Updating: monitors source and prompts the user with updated rosters
 
 ## Files
 - `index.html` — the web app (self-contained)
 - `rosters/` — roster data: `roster-app-*.json` (app-format rosters the lookup fetches), `roster_*.json` (raw CIAC exports), `rosters.json` (roster-list manifest)
 - `images/` — favicons and source/master assets
-- `misc/` — dev / build artifacts (gitignored; not in the published site)
-
-## Customization
-To update the roster:
-1. Edit the `players` array inside the `<script>` tag in `index.html`, or
-2. Regenerate from a new PDF using the original Python extraction script.
 
 Designed for speed and readability on the field or in the stands.
-
----
-
-**Example lookups:**
-- #55 → Killian Ryan — Sophomore
-- #1 → Liam Bortel — Senior
-- #42 → Danny Cavoli — Junior
