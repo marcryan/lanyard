@@ -1,7 +1,8 @@
 # Roster Change Auto-Ingest — Design Spec
 
 **Date:** 2026-09-21
-**Status:** Approved
+**Status:** ON HOLD — design captured, explicit decision to implement later
+**Security decision (email gate):** PENDING — not resolved. See "Open items" §.
 **Repo:** `marcryan/lanyard` (branch `main`, GitHub Pages site)
 
 ## Problem
@@ -40,12 +41,14 @@ corresponding roster JSON on GitHub, so the live site reflects the change withou
 
 ## Design
 
-### 0. App change (DONE, uncommitted)
+### 0. App change (PENDING — reverted, re-apply at implementation)
 
-- In `index.html`, the "Roster Update" compose flow now sends to **`rosterupdate@aleburd.com`**
+- In `index.html`, the "Roster Update" compose flow should send to **`rosterupdate@aleburd.com`**
   (was `lanyard@aleburd.com`). "Request a feature" is unchanged and still goes to
-  `lanyard@aleburd.com`. This routes roster changes through the owner's SimpleLogin alias into
-  the gateway inbox.
+  `lanyard@aleburd.com`. **NOTE: this edit is currently REVERTED / unapplied — it was made during
+  the session then reverted when the work was put on hold. It must be re-applied as part of
+  implementation.** This routes roster changes through the owner's SimpleLogin alias into the
+  gateway inbox.
 - Pending commit along with this change set.
 
 ### 1. Trigger
@@ -56,15 +59,21 @@ as an inbound run. Processing proceeds only when **both** hold:
 - The email's recipient contains `rosterupdate@aleburd.com`, and
 - The body parses as a well-formed roster change.
 
-### 2. Config change
+### 2. Config change (PENDING — security decision open)
 
-Set `EMAIL_ALLOW_ALL_USERS=true` for the email platform. Rationale: the aliased `From:` varies
-per sender and cannot be allowlisted; the account is effectively dedicated to this pipeline, and
-the real gate (recipient + body structure) lives in the processing logic where the agent controls
-it. Any non-conforming message is rejected by the parser — nothing auto-pushes by accident.
+**Security gate decision is NOT resolved.** The user explicitly rejected `EMAIL_ALLOW_ALL_USERS=true`
+(any sender = open-world exposure). Two candidate approaches were tabled:
 
-(The value of `EMAIL_ALLOWED_USERS` is preserved; allow-all means it no longer gates dispatch,
-but the recipient check below is the binding constraint.)
+- **A — Patch the email adapter** (`plugins/platforms/email/adapter.py::_sender_accepted`) to support
+  domain-suffix allowlist entries (e.g. `@simplelogin.co` matches any `*@simplelogin.co`) alongside
+  exact addresses, preserving deny-by-default. Risk: it modifies a git-checkout install
+  (`~/.hermes/hermes-agent`, origin NousResearch/hermes-agent); a `hermes update`/`git pull`
+  overwrites it (re-apply or upstream).
+- **B — No source change**; dedicated scheduled polling for new `To: rosterupdate@aleburd.com` mail,
+  validating recipient + body, keeping the generic allowlist closed. Cost: a second IMAP consumer
+  (mailbox race with the gateway).
+
+Decide A or B before implementing. Recommended: A.
 
 ### 3. Parse & match
 
@@ -140,7 +149,9 @@ roster id), so there is no second IMAP consumer and no mailbox race with the gat
 
 ## Open items / owner actions
 
-- Owner sets up the forwarding rule (app email → gateway inbox) and the SimpleLogin alias
-  recipient mapping so roster-update mail arrives at `rosterupdate@aleburd.com`.
-- Owner approves the `EMAIL_ALLOW_ALL_USERS=true` config change.
-- Owner approves the final commit + push of the app + config change set.
+- [ ] **Resolve the email security gate: Option A (domain-suffix adapter patch, recommended) vs
+      Option B (no-source dedicated polling).**
+- [ ] Re-apply the app recipient change (`rosterupdate@aleburd.com`).
+- [ ] Owner sets up the forwarding rule (app email → gateway inbox) and the SimpleLogin alias
+      recipient mapping so roster-update mail arrives at `rosterupdate@aleburd.com`.
+- [ ] Owner approves the final commit + push of the app + config change set.
