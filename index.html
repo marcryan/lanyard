@@ -815,6 +815,7 @@
       // Compose the roster-update email and route through the intermediary modal
       const subject = 'Roster Update';
       const body = 'Send this note without editing it.\n\n\nRoster Change\n'
+        + 'Roster: ' + currentRoster.name + '\n'
         + 'Number: ' + player.number + '\n'
         + 'First Name: ' + modalFirst.value.trim() + '\n'
         + 'Last Name: ' + modalLast.value.trim() + '\n'
