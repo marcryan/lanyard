@@ -541,8 +541,14 @@
 
         const row3 = document.createElement('div');
         row3.className = rowClass;
-        row3.appendChild(makeKey(9, largeKeyClass + ' col-span-2'));
-        row3.appendChild(makeKey(0, largeKeyClass + ' col-span-2'));
+        // 9 and 0 stay the same size as 1-8 but sit in the middle columns,
+        // aligned under the keys above them (6 at col 2, 7 at col 3).
+        const nine = makeKey(9, largeKeyClass);
+        nine.classList.add('col-start-2');
+        row3.appendChild(nine);
+        const zero = makeKey(0, largeKeyClass);
+        zero.classList.add('col-start-3');
+        row3.appendChild(zero);
         grid.appendChild(row3);
       } else {
         const rowClass = 'grid grid-cols-5 gap-2';
