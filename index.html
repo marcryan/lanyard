@@ -830,6 +830,9 @@
 
     // --- Install / Home Screen ---
     let deferredPrompt = null;
+    // When true, the primary modal button is a Safari hand-off ("Open in Safari")
+    // instead of an install re-attempt (iOS on a non-Safari browser).
+    let installHandoffSafari = false;
     const installLink = document.getElementById('install-link');
     const installModal = document.getElementById('install-modal');
     const installInstructions = document.getElementById('install-instructions');
@@ -858,6 +861,7 @@
     function openInstallModal() {
       const native = triggerNativeInstall();
       if (native) return; // native prompt took over; don't overlay a modal
+      setInstallInstructions(); // configure copy + buttons for this platform
       installModal.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
     }
@@ -869,9 +873,14 @@
     document.getElementById('install-close').addEventListener('click', closeInstallModal);
     document.getElementById('install-gotit').addEventListener('click', closeInstallModal);
     document.getElementById('install-backdrop').addEventListener('click', closeInstallModal);
-    // Primary action: re-attempt the native install; if still unsupported, the
-    // modal's directive already tells the user what to do (Share -> Add to Home Screen).
+    // Primary action: on iOS non-Safari this hands off to Safari; otherwise it
+    // re-attempts the native install (if still unsupported, the modal's directive
+    // already tells the user what to do: Share -> Add to Home Screen).
     document.getElementById('install-open').addEventListener('click', () => {
+      if (installHandoffSafari) {
+        window.location.href = 'x-safari-' + window.location.href;
+        return;
+      }
       if (triggerNativeInstall()) {
         closeInstallModal();
       }
@@ -882,28 +891,54 @@
       deferredPrompt = e;
     });
 
-    installLink.addEventListener('click', async (e) => {
+    installLink.addEventListener('click', (e) => {
       e.preventDefault();
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        deferredPrompt = null;
+        deferredPrompt.userChoice.finally(() => { deferredPrompt = null; });
       } else {
         // No native prompt available (file:// or iOS) — show manual instructions
-        setInstallInstructions();
         openInstallModal();
       }
     });
 
     // Per-platform directive shown inside the modal when no native prompt exists.
+    // Also configures the modal's buttons for the current platform on every open.
+    // iOS is the only case where a programmatic install is impossible, so it gets
+    // dedicated handling: Safari shows large-text steps + Close; any other iOS
+    // browser must hand the user off to Safari via the x-safari- URL scheme.
     function setInstallInstructions() {
+      const openBtn = document.getElementById('install-open');
+      const gotitBtn = document.getElementById('install-gotit');
+      // Reset to the desktop/default state so every open starts clean.
+      installHandoffSafari = false;
+      installInstructions.classList.remove('text-lg');
+      openBtn.textContent = 'Add to Home Screen';
+      openBtn.classList.remove('hidden');
+      gotitBtn.textContent = 'Got it';
+      gotitBtn.classList.remove('hidden');
+
       const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-      const isSafariOnIos = isIos && /safari/i.test(navigator.userAgent) && !/crios|chrome|edg/i.test(navigator.userAgent);
-      if (isSafariOnIos) {
-        installInstructions.innerHTML = 'Press the button with <span class="font-semibold text-slate-700">three dots (&ctdot;)</span> in the toolbar, tap <span class="font-semibold text-slate-700">Share</span>, scroll down, then select <span class="font-semibold text-slate-700">"Add to Home Screen"</span>.';
-      } else if (isIos) {
-        installInstructions.innerHTML = 'Tap the <span class="font-semibold text-slate-700">Share</span> icon (box with an up arrow) in the address bar, scroll down, then tap <span class="font-semibold text-slate-700">"Add to Home Screen"</span>.';
-      } else if (/chrom(e|ium)|crios|edg/i.test(navigator.userAgent)) {
+      const isIosSafari = isIos && /safari/i.test(navigator.userAgent) && !/crios|chrome|edg/i.test(navigator.userAgent);
+
+      if (isIos) {
+        installInstructions.classList.add('text-lg');
+        if (isIosSafari) {
+          installInstructions.innerHTML = 'Press the button with <span class="font-semibold text-slate-700">three dots (&ctdot;)</span> in the toolbar, tap <span class="font-semibold text-slate-700">Share</span>, scroll down, then select <span class="font-semibold text-slate-700">"Add to Home Screen"</span>.';
+          // Progress is only possible here via the share sheet; hide the
+          // non-working install button and keep just a Close control.
+          openBtn.classList.add('hidden');
+          gotitBtn.textContent = 'Close';
+        } else {
+          installInstructions.innerHTML = 'This needs to be completed from the Safari browser.';
+          openBtn.textContent = 'Open in Safari';
+          installHandoffSafari = true;
+          gotitBtn.textContent = 'Close';
+        }
+        return;
+      }
+
+      if (/chrom(e|ium)|crios|edg/i.test(navigator.userAgent)) {
         installInstructions.innerHTML = 'Tap the <span class="font-semibold text-slate-700">"Add to Home Screen"</span> button below, or use your browser\'s menu → <span class="font-semibold text-slate-700">"Add to Home Screen"</span>.';
       } else {
         installInstructions.innerHTML = 'Use your browser\'s menu → <span class="font-semibold text-slate-700">"Add to Home Screen"</span> (Share → Add to Home Screen on iPhone).';
