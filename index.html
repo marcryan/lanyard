@@ -579,7 +579,11 @@
     // Window (ms) after a key press within which a NEW digit appends to the current
     // value instead of starting a fresh entry. Once exceeded (or once 2 digits are in
     // the field), the next key press clears the field and starts a new lookup.
-    const SINGLE_DIGIT_WINDOW_MS = 1200;
+    const SINGLE_DIGIT_WINDOW_MS = 2600;
+    // How long to wait (after the last keypress) before running the jersey lookup.
+    // Long enough to type a second digit (so 8 then 9 yields 89, not 8 then 9), but
+    // short enough that a genuine single-digit search still feels immediate.
+    const JERSEY_LOOKUP_DELAY_MS = 400;
     let lastInputTime = 0;
 
     function appendDigit(d) {
@@ -598,7 +602,7 @@
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         lookup(jerseyDisplay.textContent.trim());
-      }, 130);
+      }, JERSEY_LOOKUP_DELAY_MS);
     }
 
     buildKeypad();
